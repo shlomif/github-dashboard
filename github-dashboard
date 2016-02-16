@@ -5,9 +5,18 @@ use warnings;
 use utf8;
 use Carp;
 use Net::GitHub;
+use Getopt::Lucid ':all';
 use List::Util qw/max/;
 
-my $org = "dagolden";
+my $opts = Getopt::Lucid->getopt(
+    [
+        #<<< No perltidy
+        Switch('all|a'),
+        #>>>
+    ]
+);
+
+$opts->validate;
 
 sub _git_config {
     my $key = shift;
@@ -21,7 +30,7 @@ my $github_token = _git_config("github.token");
 
 my $gh = Net::GitHub->new( access_token => $github_token );
 
-my @issues = $gh->query("/orgs/$org/issues?filter=all&state=open");
+my @issues = $gh->query("/orgs/dagolden/issues?filter=all&state=open");
 
 while ( $gh->has_next_page ) {
     push @issues, $gh->next_page;
@@ -29,15 +38,19 @@ while ( $gh->has_next_page ) {
 
 my %dash;
 for my $i (@issues) {
-    for (qw/PR wish issue/) {
-        $dash{ $i->{repository}{name} }{$_} //= 0;
+    my $name = $i->{repository}{name};
+    for (qw/PR wish issue total/) {
+        $dash{ $name  }{$_} //= 0;
     }
-    my $wishlist = grep { /wish-?list/i } $i->{title}, @{ $i->{labels} };
+    my $labels = $i->{labels};
+    my $wishlist = $i->{title} =~ /wish-?list/i
+      || grep { /enhancement|question|wishlist/i } map { $_->{name} } @{ $i->{labels} };
     my $type =
         exists $i->{pull_request} ? 'PR'
       : $wishlist                 ? 'wish'
       :                             'issue';
-    $dash{ $i->{repository}{name} }{$type}++;
+    $dash{ $name }{$type}++;
+    $dash{ $name }{total}++ unless $wishlist;
 }
 
 my $width = max( map { length($_) } keys %dash );
