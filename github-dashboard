@@ -1,4 +1,10 @@
 #!/usr/bin/env perl
+# Copyright 2015 by David Golden
+# Licensed under CC0 https://creativecommons.org/publicdomain/zero/1.0/
+# Updated 2016-03-01:
+# - more variation in organzations selected; you will want to customize this yourself
+# - splits out wishlists differently/correctly
+# - reports only PRs unless --all is specified
 use v5.10;
 use strict;
 use warnings;
@@ -12,6 +18,7 @@ my $opts = Getopt::Lucid->getopt(
     [
         #<<< No perltidy
         Switch('all|a'),
+        Switch('ptg'),
         #>>>
     ]
 );
@@ -25,15 +32,49 @@ sub _git_config {
     return $value;
 }
 
+my %WATCHLIST = map { $_ => 1 } qw(
+    CPAN-Common-Index
+    File-Temp
+    Parse-CPAN-Meta
+    Perl-OSType
+    Sub-Uplevel
+    YAML-Tiny
+);
+
+sub _ptg_watched {
+    my $repo = $_[0]{repository}{name};
+    return 1 if $WATCHLIST{$repo};
+    return 1 if $repo =~ /^CPAN-Meta/;
+    return;
+}
+
 my $github_user  = _git_config("github.user");
 my $github_token = _git_config("github.token");
 
 my $gh = Net::GitHub->new( access_token => $github_token );
 
-my @issues = $gh->query("/orgs/dagolden/issues?filter=all&state=open");
+my @issues;
 
+# just xdg issues
+push @issues, $gh->query("/user/issues?filter=all&state=open");
 while ( $gh->has_next_page ) {
     push @issues, $gh->next_page;
+}
+
+# select org issues
+for my $org ( qw/dagolden cpan-testers/ ) {
+    push @issues, $gh->query("/orgs/$org/issues?filter=all&state=open");
+    while ( $gh->has_next_page ) {
+        push @issues, $gh->next_page;
+    }
+}
+
+# select PTG issues
+if ( $opts->get_ptg ) {
+    push @issues, grep { _ptg_watched($_) } $gh->query("/orgs/Perl-Toolchain-Gang/issues?filter=all&state=open");
+    while ( $gh->has_next_page ) {
+        push @issues, grep { _ptg_watched($_) } $gh->next_page;
+    }
 }
 
 my %dash;
@@ -62,6 +103,8 @@ my @sorted = sort {
 } keys %dash;
 
 for my $k (@sorted) {
+    next unless $opts->get_all || $dash{$k}{PR};
     printf( "%*s %3d %3d %3d\n",
         $width, $k, $dash{$k}{PR}, $dash{$k}{issue}, $dash{$k}{wish}, );
 }
+
