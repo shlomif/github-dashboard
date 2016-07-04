@@ -62,7 +62,7 @@ while ( $gh->has_next_page ) {
 }
 
 # select org issues
-for my $org ( qw/dagolden cpan-testers/ ) {
+for my $org ( qw// ) {
     push @issues, $gh->query("/orgs/$org/issues?filter=all&state=open");
     while ( $gh->has_next_page ) {
         push @issues, $gh->next_page;
