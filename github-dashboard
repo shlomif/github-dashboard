@@ -2,7 +2,8 @@
 # Copyright 2015 by David Golden
 # Licensed under CC0 https://creativecommons.org/publicdomain/zero/1.0/
 # Updated 2016-03-01:
-# - more variation in organzations selected; you will want to customize this yourself
+# - more variation in organizations selected; you will want to customize this
+# yourself
 # - splits out wishlists differently/correctly
 # - reports only PRs unless --all is specified
 use v5.10;
