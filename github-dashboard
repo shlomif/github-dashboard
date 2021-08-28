@@ -136,14 +136,15 @@ my @sorted = sort {
         || $dash{$b}{issue} <=> $dash{$a}{issue}
         || lc($a) cmp lc($b)
 } keys %dash;
-
+my $get_all = $opts->get_all;
+my $get_url = $opts->get_url;
 for my $k (@sorted)
 {
     my $rec = $dash{$k};
 
-    next unless $opts->get_all || $rec->{PR};
+    next unless $get_all || $rec->{PR};
     printf( "%*s %3d %3d %3d%s\n",
         $width, $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
-        ( $opts->get_url ? ( " " . $rec->{url} ) : ("") ) );
+        ( $get_url ? ( " " . $rec->{url} ) : ("") ) );
 }
 
