@@ -26,7 +26,8 @@ my $opts = Getopt::Lucid->getopt(
 
 $opts->validate;
 
-sub _git_config {
+sub _git_config
+{
     my $key = shift;
     chomp( my $value = `git config --get $key` );
     croak "Unknown $key" unless $value;
@@ -42,7 +43,8 @@ my %WATCHLIST = map { $_ => 1 } qw(
     YAML-Tiny
 );
 
-sub _ptg_watched {
+sub _ptg_watched
+{
     my $repo = $_[0]{repository}{name};
     return 1 if $WATCHLIST{$repo};
     return 1 if $repo =~ /^CPAN-Meta/;
@@ -58,52 +60,63 @@ my @issues;
 
 # just xdg issues
 push @issues, $gh->query("/user/issues?filter=all&state=open");
-while ( $gh->has_next_page ) {
+while ( $gh->has_next_page )
+{
     push @issues, $gh->next_page;
 }
 
 # select org issues
-for my $org ( qw// ) {
+for my $org (qw//)
+{
     push @issues, $gh->query("/orgs/$org/issues?filter=all&state=open");
-    while ( $gh->has_next_page ) {
+    while ( $gh->has_next_page )
+    {
         push @issues, $gh->next_page;
     }
 }
 
 # select PTG issues
-if ( $opts->get_ptg ) {
-    push @issues, grep { _ptg_watched($_) } $gh->query("/orgs/Perl-Toolchain-Gang/issues?filter=all&state=open");
-    while ( $gh->has_next_page ) {
+if ( $opts->get_ptg )
+{
+    push @issues,
+        grep { _ptg_watched($_) }
+        $gh->query("/orgs/Perl-Toolchain-Gang/issues?filter=all&state=open");
+    while ( $gh->has_next_page )
+    {
         push @issues, grep { _ptg_watched($_) } $gh->next_page;
     }
 }
 
 my %dash;
-for my $i (@issues) {
+for my $i (@issues)
+{
     my $name = $i->{repository}{name};
-    for (qw/PR wish issue total/) {
-        $dash{ $name  }{$_} //= 0;
+    for (qw/PR wish issue total/)
+    {
+        $dash{$name}{$_} //= 0;
     }
-    my $labels = $i->{labels};
+    my $labels   = $i->{labels};
     my $wishlist = $i->{title} =~ /wish-?list/i
-      || grep { /enhancement|question|wishlist/i } map { $_->{name} } @{ $i->{labels} };
+        || grep { /enhancement|question|wishlist/i }
+        map { $_->{name} } @{ $i->{labels} };
     my $type =
-        exists $i->{pull_request} ? 'PR'
-      : $wishlist                 ? 'wish'
-      :                             'issue';
-    $dash{ $name }{$type}++;
-    $dash{ $name }{total}++ unless $wishlist;
+          exists $i->{pull_request} ? 'PR'
+        : $wishlist                 ? 'wish'
+        :                             'issue';
+    $dash{$name}{$type}++;
+    $dash{$name}{total}++ unless $wishlist;
 }
 
 my $width = max( map { length($_) } keys %dash );
 
 my @sorted = sort {
-         $dash{$b}{PR} <=> $dash{$a}{PR}
-      || $dash{$b}{issue} <=> $dash{$a}{issue}
-      || lc($a) cmp lc($b)
+           $dash{$b}{PR} <=> $dash{$a}{PR}
+        || $dash{$b}{issue} <=> $dash{$a}{issue}
+        || lc($a) cmp lc($b)
 } keys %dash;
 
-for my $k (@sorted) {
+for my $k (@sorted)
+{
     next unless $opts->get_all || $dash{$k}{PR};
     printf( "%*s %3d %3d %3d\n",
         $width, $k, $dash{$k}{PR}, $dash{$k}{issue}, $dash{$k}{wish}, );
