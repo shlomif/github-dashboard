@@ -20,6 +20,7 @@ my $opts = Getopt::Lucid->getopt(
         #<<< No perltidy
         Switch('all|a'),
         Switch('ptg'),
+        Switch('url'),
         #>>>
     ]
 );
@@ -108,8 +109,9 @@ if ( $opts->get_ptg )
 my %dash;
 for my $i_record (@issues)
 {
-    my $i    = $i_record->{issue};
-    my $name = $i->{repository}{name};
+    my $i        = $i_record->{issue};
+    my $base_url = $i_record->{base_url};
+    my $name     = $i->{repository}{name};
     for (qw/PR wish issue total/)
     {
         $dash{$name}{$_} //= 0;
@@ -124,6 +126,7 @@ for my $i_record (@issues)
         :                             'issue';
     $dash{$name}{$type}++;
     $dash{$name}{total}++ unless $wishlist;
+    $dash{$name}{url} = "$base_url/${name}";
 }
 
 my $width = max( map { length($_) } keys %dash );
@@ -137,7 +140,8 @@ my @sorted = sort {
 for my $k (@sorted)
 {
     next unless $opts->get_all || $dash{$k}{PR};
-    printf( "%*s %3d %3d %3d\n",
-        $width, $k, $dash{$k}{PR}, $dash{$k}{issue}, $dash{$k}{wish}, );
+    printf( "%*s %3d %3d %3d%s\n",
+        $width, $k, $dash{$k}{PR}, $dash{$k}{issue}, $dash{$k}{wish},
+        ( $opts->get_url ? ( " " . $dash{$k}{url} ) : ("") ) );
 }
 
