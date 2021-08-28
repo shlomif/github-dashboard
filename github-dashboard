@@ -56,40 +56,59 @@ my $github_token = _git_config("github.token");
 
 my $gh = Net::GitHub->new( access_token => $github_token );
 
+sub _user_map
+{
+    my $issue = shift;
+    return +{
+        base_url => "https://github.com/${github_user}",
+        issue    => $issue,
+    };
+}
 my @issues;
 
+sub _add_issues
+{
+    my $aref = shift;
+    push @issues, map { _user_map($_) } @$aref;
+    return;
+}
+
 # just xdg issues
-push @issues, $gh->query("/user/issues?filter=all&state=open");
+_add_issues( [ $gh->query("/user/issues?filter=all&state=open") ] );
 while ( $gh->has_next_page )
 {
-    push @issues, $gh->next_page;
+    _add_issues( [ $gh->next_page ] );
 }
 
 # select org issues
 for my $org (qw//)
 {
-    push @issues, $gh->query("/orgs/$org/issues?filter=all&state=open");
+    _add_issues( [ $gh->query("/orgs/$org/issues?filter=all&state=open") ] );
     while ( $gh->has_next_page )
     {
-        push @issues, $gh->next_page;
+        _add_issues( [ $gh->next_page ] );
     }
 }
 
 # select PTG issues
 if ( $opts->get_ptg )
 {
-    push @issues,
-        grep { _ptg_watched($_) }
-        $gh->query("/orgs/Perl-Toolchain-Gang/issues?filter=all&state=open");
+    _add_issues(
+        [
+            grep { _ptg_watched($_) } $gh->query(
+                "/orgs/Perl-Toolchain-Gang/issues?filter=all&state=open")
+        ]
+    );
     while ( $gh->has_next_page )
     {
-        push @issues, grep { _ptg_watched($_) } $gh->next_page;
+        _add_issues( [ grep { _ptg_watched($_) } $gh->next_page ] );
     }
 }
 
 my %dash;
-for my $i (@issues)
+for my $i_record (@issues)
 {
+    my $i    = $i_record->{issue};
     my $name = $i->{repository}{name};
     for (qw/PR wish issue total/)
     {
