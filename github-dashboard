@@ -139,9 +139,11 @@ my @sorted = sort {
 
 for my $k (@sorted)
 {
-    next unless $opts->get_all || $dash{$k}{PR};
+    my $rec = $dash{$k};
+
+    next unless $opts->get_all || $rec->{PR};
     printf( "%*s %3d %3d %3d%s\n",
-        $width, $k, $dash{$k}{PR}, $dash{$k}{issue}, $dash{$k}{wish},
-        ( $opts->get_url ? ( " " . $dash{$k}{url} ) : ("") ) );
+        $width, $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
+        ( $opts->get_url ? ( " " . $rec->{url} ) : ("") ) );
 }
 
