@@ -138,11 +138,12 @@ my @sorted = sort {
 } keys %dash;
 my $get_all = $opts->get_all;
 my $get_url = $opts->get_url;
+PRINT:
 for my $k (@sorted)
 {
     my $rec = $dash{$k};
 
-    next unless $get_all || $rec->{PR};
+    next PRINT unless $get_all || $rec->{PR};
     printf( "%*s %3d %3d %3d%s\n",
         $width, $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
         ( $get_url ? ( " " . $rec->{url} ) : ("") ) );
