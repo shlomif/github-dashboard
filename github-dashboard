@@ -15,9 +15,12 @@ use Net::GitHub;
 use Getopt::Lucid ':all';
 use List::Util qw/max/;
 
+use Path::Tiny qw/ path tempdir tempfile cwd /;
+
 my $opts = Getopt::Lucid->getopt(
     [
         #<<< No perltidy
+        Param('format')->default(''),
         Switch('all|a'),
         Switch('ptg'),
         Switch('url'),
@@ -26,6 +29,20 @@ my $opts = Getopt::Lucid->getopt(
 );
 
 $opts->validate;
+
+my $format = $opts->get_format;
+my $adoc   = ( $format eq 'asciidoc' );
+if ($format)
+{
+    if ( not $adoc )
+    {
+        die "Format must be asciidoc!";
+    }
+}
+my $text = <<'EOF';
+[width="50%"]
+|===========================================================
+EOF
 
 sub _git_config
 {
@@ -147,5 +164,18 @@ for my $k (@sorted)
     printf( "%*s %3d %3d %3d%s\n",
         $width, $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
         ( $get_url ? ( " " . $rec->{url} ) : ("") ) );
+    $text .= sprintf( "|%s |%d |%d |%d%s\n",
+        $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
+        ( $get_url ? ( "| " . $rec->{url} ) : ("") ) );
 }
 
+$text .= <<'EOF';
+|===========================================================
+EOF
+
+if ($adoc)
+{
+    my $filename = 'dashy.asciidoc';
+
+    path($filename)->spew_utf8($text);
+}
