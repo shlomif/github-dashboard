@@ -47,6 +47,7 @@ GitHub Dashboard
 
 [width="100%"]
 |===========================================================
+| **Repo** | **Pull requests** | **Issues** | **Wishlist**
 EOF
 
 sub _git_config
