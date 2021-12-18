@@ -10,12 +10,11 @@ use v5.10;
 use strict;
 use warnings;
 use utf8;
-use Carp;
-use POSIX ();
-use Net::GitHub;
+use Carp qw/ croak /;
+use POSIX       ();
+use Net::GitHub ();
 use Getopt::Lucid ':all';
-use List::Util qw/max/;
-
+use List::Util qw/ max /;
 use Path::Tiny qw/ path tempdir tempfile cwd /;
 
 my $opts = Getopt::Lucid->getopt(
