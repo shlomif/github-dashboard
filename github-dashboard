@@ -161,12 +161,13 @@ for my $k (@sorted)
     my $rec = $dash{$k};
 
     next PRINT unless $get_all || $rec->{PR};
+    my $url = $rec->{url};
     printf( "%*s %3d %3d %3d%s\n",
         $width, $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
-        ( $get_url ? ( " " . $rec->{url} ) : ("") ) );
-    $text .= sprintf( "|%s |%d |%d |%d%s\n",
-        $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
-        ( $get_url ? ( "| " . $rec->{url} ) : ("") ) );
+        ( $get_url ? (" $url") : ("") ) );
+    $text .= sprintf( "|%s[%s] |%d |%d |%d%s\n",
+        $url, $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
+        ( $get_url ? ("| $url") : ("") ) );
 }
 
 $text .= <<'EOF';
