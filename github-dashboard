@@ -11,6 +11,7 @@ use strict;
 use warnings;
 use utf8;
 use Carp;
+use POSIX ();
 use Net::GitHub;
 use Getopt::Lucid ':all';
 use List::Util qw/max/;
@@ -39,7 +40,12 @@ if ($format)
         die "Format must be asciidoc!";
     }
 }
-my $text = <<'EOF';
+my $text = <<"EOF";
+GitHub Dashboard
+================
+:Date: @{[POSIX::strftime("%Y-%m-%d", localtime())]}
+:Revision: \$Id\$
+
 [width="50%"]
 |===========================================================
 EOF
