@@ -46,7 +46,7 @@ GitHub Dashboard
 :Date: @{[POSIX::strftime("%Y-%m-%d", localtime())]}
 :Revision: \$Id\$
 
-[width="50%"]
+[width="100%"]
 |===========================================================
 EOF
 
