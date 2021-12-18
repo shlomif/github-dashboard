@@ -13,7 +13,7 @@ use utf8;
 use Carp qw/ croak /;
 use POSIX       ();
 use Net::GitHub ();
-use Getopt::Lucid ':all';
+use Getopt::Lucid qw/ Param Switch /;
 use List::Util qw/ max /;
 use Path::Tiny qw/ path tempdir tempfile cwd /;
 
