@@ -170,9 +170,12 @@ for my $k (@sorted)
     printf( "%*s %3d %3d %3d%s\n",
         $width, $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
         ( $get_url ? (" $url") : ("") ) );
-    $text .= sprintf( "|%s[%s] |%d |%d |%d%s\n",
+    $text .= sprintf(
+        "|%s[%s] |%d |%d |%d\n",
         $url, $k, $rec->{PR}, $rec->{issue}, $rec->{wish},
-        ( $get_url ? ("| $url") : ("") ) );
+
+        # ( $get_url ? ("| $url") : ("") )
+    );
 }
 
 $text .= <<'EOF';
