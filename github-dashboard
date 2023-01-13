@@ -10,17 +10,18 @@ use v5.10;
 use strict;
 use warnings;
 use utf8;
-use Carp qw/ croak /;
-use POSIX       ();
-use Net::GitHub ();
+use Carp          qw/ croak /;
+use POSIX         ();
+use Net::GitHub   ();
 use Getopt::Lucid qw/ Param Switch /;
-use List::Util qw/ max /;
-use Path::Tiny qw/ path tempdir tempfile cwd /;
+use List::Util    qw/ max /;
+use Path::Tiny    qw/ path tempdir tempfile cwd /;
 
 my $opts = Getopt::Lucid->getopt(
     [
         #<<< No perltidy
         Param('format')->default(''),
+        Param('output|o')->default(''),
         Switch('all|a'),
         Switch('ptg'),
         Switch('url'),
@@ -71,7 +72,7 @@ sub _ptg_watched
 {
     my $repo = $_[0]{repository}{name};
     return 1 if $WATCHLIST{$repo};
-    return 1 if $repo =~ /^CPAN-Meta/;
+    return 1 if $repo =~ /\ACPAN-Meta/;
     return;
 }
 
@@ -142,13 +143,16 @@ for my $i_record (@issues)
     my $labels   = $i->{labels};
     my $wishlist = $i->{title} =~ /wish-?list/i
         || grep { /enhancement|question|wishlist/i }
-        map { $_->{name} } @{ $i->{labels} };
+        map { $_->{name} } @{$labels};
     my $type =
           exists $i->{pull_request} ? 'PR'
         : $wishlist                 ? 'wish'
         :                             'issue';
-    $dash{$name}{$type}++;
-    $dash{$name}{total}++ unless $wishlist;
+    ++$dash{$name}{$type};
+    if ( not $wishlist )
+    {
+        ++$dash{$name}{total};
+    }
     $dash{$name}{url} = "$base_url/${name}";
 }
 
@@ -156,8 +160,8 @@ my $width = max( map { length($_) } keys %dash );
 
 my @sorted = sort {
            $dash{$b}{PR} <=> $dash{$a}{PR}
-        || $dash{$b}{issue} <=> $dash{$a}{issue}
-        || lc($a) cmp lc($b)
+        or $dash{$b}{issue} <=> $dash{$a}{issue}
+        or lc($a) cmp lc($b)
 } keys %dash;
 my $get_all = $opts->get_all;
 my $get_url = $opts->get_url;
@@ -185,7 +189,8 @@ EOF
 
 if ($adoc)
 {
-    my $filename = 'dashy.asciidoc';
+    my $filename = $opts->get_output;
+    $filename ||= 'dashy.asciidoc';
 
     path($filename)->spew_utf8($text);
 }
