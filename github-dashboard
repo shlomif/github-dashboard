@@ -10,12 +10,12 @@ use v5.10;
 use strict;
 use warnings;
 use utf8;
-use Carp          qw/ croak /;
+use Carp          qw/ confess /;
 use POSIX         ();
 use Net::GitHub   ();
 use Getopt::Lucid qw/ Param Switch /;
 use List::Util    qw/ max /;
-use Path::Tiny    qw/ path tempdir tempfile cwd /;
+use Path::Tiny    qw/ path /;
 
 my $opts = Getopt::Lucid->getopt(
     [
@@ -55,7 +55,7 @@ sub _git_config
 {
     my $key = shift;
     chomp( my $value = `git config --get $key` );
-    croak "Unknown $key" unless $value;
+    confess "Unknown $key" unless $value;
     return $value;
 }
 
