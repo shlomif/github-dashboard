@@ -20,9 +20,9 @@ use Path::Tiny    qw/ path /;
 my $opts = Getopt::Lucid->getopt(
     [
         #<<< No perltidy
-        Param('format')->default(''),
+        Param('format')->default('asciidoc'),
         Param('output|o')->default(''),
-        Switch('all|a'),
+        Switch('all|a')->default(1),
         Switch('ptg'),
         Switch('url'),
         #>>>
